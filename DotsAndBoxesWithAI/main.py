@@ -1,6 +1,6 @@
 from grid import Grid
 from player import Player
-from ai_player import AIPlayer
+from ai_player import AIPlayer, format_move
 from game_logic import GameLogic
 from ui import UI
 
@@ -9,14 +9,6 @@ def main():
     """
     Main function to run the Dots and Boxes game.
     """
-    # Initialize UI instance (will be created later)
-    ui = None
-
-    # Welcome message
-    print("\n" + "=" * 50)
-    print("Welcome to Dots and Boxes!")
-    print("=" * 50)
-
     # Get game setup from user
     try:
         grid_size = int(input("\nEnter grid size (e.g., 4 for 4x4): "))
@@ -27,7 +19,6 @@ def main():
         print("Invalid input. Using default size of 4.")
         grid_size = 4
 
-    num_players = 2  # Default to 2 players
     try:
         num_players = int(input("Enter number of players (2-4): "))
         if num_players < 2 or num_players > 4:
@@ -66,12 +57,14 @@ def main():
 
         current = game_logic.get_current_player()
         if isinstance(current, AIPlayer):
-            move = current.choose_move(game_logic)
-            if move is None:
-                print("AI has no valid moves.")
-                break
-            start, end = move
-            print(f"AI {current.name} plays: {start[0]},{start[1]} {end[0]},{end[1]}")
+            # Ask the LLM for a move. Stop the game if it can't give one.
+            try:
+                start, end = current.choose_move(game_logic)
+            except Exception as error:
+                print(f"\nAI error: {error}")
+                print("The game cannot continue without the AI. Goodbye!")
+                return
+            print(f"{current.name} (AI) plays: {format_move((start, end))}")
         else:
             # Human input
             line_coords = ui.get_line_input()
@@ -90,8 +83,7 @@ def main():
                 game_logic.switch_player()
         else:
             print("\n❌ Invalid move! That line is either already drawn, not adjacent, or out of bounds.")
-            if not isinstance(current, AIPlayer):
-                print("Try again.")
+            print("Try again.")
 
     # Game over - display results
     ui.display_grid()

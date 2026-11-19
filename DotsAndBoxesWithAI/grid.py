@@ -6,7 +6,6 @@ class Grid:
         """
         self.size = size
         self.lines = set()  # Stores drawn lines as tuples of coordinates
-        self.grid = [[(x, y) for x in range(size)] for y in range(size)]  # 2D list of dots
 
     def add_line(self, start, end):
         """

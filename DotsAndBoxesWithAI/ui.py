@@ -1,8 +1,3 @@
-from grid import Grid
-from player import Player
-from game_logic import GameLogic
-
-
 class UI:
     def __init__(self, grid, game_logic):
         """

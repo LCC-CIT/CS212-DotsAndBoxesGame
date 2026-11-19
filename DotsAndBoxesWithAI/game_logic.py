@@ -116,45 +116,6 @@ class GameLogic:
                     moves.append((a, b))
         return moves
 
-    def will_complete_square(self, start, end):
-        """
-        Determine if adding a given valid line would complete at least one square.
-        This does NOT mutate game state.
-        :param start: (x1,y1)
-        :param end: (x2,y2)
-        :return: number of squares completed by hypothetical addition.
-        """
-        x1, y1 = start
-        x2, y2 = end
-        hypothetical = set(self.grid.lines)
-        hypothetical.add((start, end))
-        count = 0
-        # Determine orientation and potential squares like check_for_squares but using hypothetical set
-        potential = []
-        if x1 == x2:  # vertical
-            potential.append((min(x1, x2) - 1, min(y1, y2)))
-            potential.append((min(x1, x2), min(y1, y2)))
-        elif y1 == y2:  # horizontal
-            potential.append((min(x1, x2), min(y1, y2) - 1))
-            potential.append((min(x1, x2), min(y1, y2)))
-        size = self.grid.size
-        for sx, sy in potential:
-            if sx < 0 or sy < 0 or sx >= size - 1 or sy >= size - 1:
-                continue
-            top = ((sx, sy), (sx + 1, sy))
-            bottom = ((sx, sy + 1), (sx + 1, sy + 1))
-            left = ((sx, sy), (sx, sy + 1))
-            right = ((sx + 1, sy), (sx + 1, sy + 1))
-            edges = [top, bottom, left, right]
-            complete = True
-            for e in edges:
-                if e not in hypothetical and (e[1], e[0]) not in hypothetical:
-                    complete = False
-                    break
-            if complete:
-                count += 1
-        return count
-
     def get_winner(self):
         """
         Get the winner of the game (player with the highest score).

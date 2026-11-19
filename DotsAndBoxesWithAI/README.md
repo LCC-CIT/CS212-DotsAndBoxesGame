@@ -14,11 +14,12 @@ DotsAndBoxes/
 ├── player.py         # Player representation
 ├── game_logic.py     # Game rules and square detection
 ├── ui.py             # User interface
-├── ai_player.py      # AI player (asks the LLM for moves)
-├── llm_client.py     # OpenRouter chat-completions client
+├── ai_player.py      # AI player: builds the prompt and reads the model's move
+├── llm_client.py     # Sends a prompt to a model on OpenRouter
 ├── main.py           # Game entry point
-├── test.py           # Unit tests for grid module
-└── test_game.py      # Integration tests for game logic
+├── test_grid.py      # Test driver for grid.py
+├── test_game_logic.py  # Test driver for game_logic.py
+└── test_ai_player.py # Test driver for ai_player.py (part 2 calls the model)
 ```
 
 ## Module Descriptions
@@ -99,22 +100,17 @@ Your move: 0,0 1,0
 [Line added... continue playing...]
 ```
 
-## Running Tests
+## Running the Test Drivers
 
-### Unit Tests (Grid Module)
+Each test driver runs some code and prints `PASS` or `FAIL` for each check.
+
 ```bash
-python test.py
+python test_grid.py
+python test_game_logic.py
+python test_ai_player.py
 ```
 
-### Integration Tests (Game Logic)
-```bash
-python test_game.py
-```
-
-### Run All Tests
-```bash
-python -m unittest discover
-```
+Part 2 of `test_ai_player.py` asks the model for a real move, so it needs your API key in `.env`.
 
 ## Features
 
@@ -160,8 +156,8 @@ GameLogic.current_player_index and players (with scores)
 You can add an AI player when configuring players by typing `AI` for the player type.
 
 ### How It Chooses Moves
-1. Asks an LLM on [OpenRouter](https://openrouter.ai) for a move (if an API key is in `.env` and the dependencies are installed).
-2. If the model is unavailable or its move is not legal, the AI picks a random legal move.
+1. `ai_player.py` describes the board in a prompt, and `llm_client.py` sends it to a model on [OpenRouter](https://openrouter.ai).
+2. If the model isn't responding, its reply has no move, or the move is illegal, the game shows an error message and ends.
 
 The model is set by `MODEL` in `llm_client.py` (default: `baidu/ernie-5.5-flash-preview:free`). Any OpenRouter model ID will work.
 
@@ -180,16 +176,13 @@ pip install -r requirements.txt
 
 `.env` is listed in `.gitignore`, so your key will not be committed. Never commit a real key.
 
-### Dynamic Prompt Contents Sent to the Model
+### What the Prompt Contains
 - Board size
-- Current lines
-- Completed squares
-- Player scores
-- Current player name
-- Valid moves list (may truncate if large)
+- Lines already drawn
+- Legal moves
 
 ### Expected Model Output
-Return exactly: `x1,y1 x2,y2` (e.g., `0,0 0,1`). Any other format makes the AI pick a random legal move.
+One move in the format `x1,y1 x2,y2` (e.g., `0,0 0,1`). The game uses the first move it finds in the reply. If there's no move in the reply, that's an error.
 
 ### Offline / No Key
-If the key or dependencies are missing, the AI still plays, using random legal moves.
+If the key or the packages are missing, or OpenRouter can't be reached, the game shows an error message on the AI's turn and ends. Games with only human players don't need a key, but the packages still need to be installed.

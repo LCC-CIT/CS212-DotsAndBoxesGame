@@ -8,7 +8,8 @@ Purpose: Equip AI coding agents to quickly extend, refactor, and test this small
 - `game_logic.py` (`GameLogic`): Turn management, square completion detection, winner evaluation. Squares tracked by top-left dot coordinate in `completed_squares` (a `set`). No I/O here.
 - `player.py` (`Player`): Simple name + score container. `add_score()` increments numeric tally.
 - `ui.py` (`UI`): All user interaction (printing grid, prompts, winner display). Parsing of moves, validation messaging. Avoid adding game logic here.
-- Tests: `test.py` (unit tests for `Grid`), `test_game.py` (informal integration-style script; prints state). Use these as examples for new tests.
+- `ai_player.py` (`AIPlayer`): Builds the prompt, parses the model's reply, and checks the move is legal. `llm_client.py` (`ask_llm`): Sends a prompt to OpenRouter.
+- Tests: simple test drivers (`test_grid.py`, `test_game_logic.py`, `test_ai_player.py`) that print PASS/FAIL. Students haven't used `unittest`, so keep new tests in this style.
 
 ## Data & State Conventions
 - Coordinates: `(x, y)` with `x` increasing horizontally and `y` vertically downward (0-based). Grid size N => valid coordinates `0..N-1`.
@@ -29,19 +30,13 @@ Purpose: Equip AI coding agents to quickly extend, refactor, and test this small
 - For persistence (e.g., save/resume) serialize: grid size, `grid.lines`, player names/scores, `completed_squares`, current player index.
 
 ## Testing Workflow
-Run unit tests:
+Run the test drivers:
 ```bash
-python test.py
+python test_grid.py
+python test_game_logic.py
+python test_ai_player.py
 ```
-Run integration / manual scenario:
-```bash
-python test_game.py
-```
-Run discovery (add new tests under root named `test_*.py`):
-```bash
-python -m unittest discover
-```
-Add tests near existing patterns (prefer new dedicated `test_game_logic.py` for logic-only cases).
+Each one prints PASS or FAIL for each check. Part 2 of `test_ai_player.py` calls the model, so it needs `OPENROUTER_API_KEY` in `.env`. Add new checks to the matching driver using its `check()` helper.
 
 ## Patterns & Style
 - Minimal dependencies; keep new code dependency-free unless justified.
