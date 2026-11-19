@@ -1,15 +1,15 @@
 import random
 from player import Player
-from gemini_client import request_move
+from llm_client import request_move
 
 class AIPlayer(Player):
-    """AI Player that uses Gemini SDK or heuristic fallback."""
+    """AI Player that uses an OpenRouter LLM or heuristic fallback."""
 
     def choose_move(self, game_logic):
         valid_moves = game_logic.get_valid_moves()
         if not valid_moves:
             return None
-        # Attempt Gemini move
+        # Attempt LLM move via OpenRouter
         player_scores = {p.name: p.score for p in game_logic.players}
         lines_drawn = list(game_logic.grid.lines)
         completed_squares = list(game_logic.completed_squares)

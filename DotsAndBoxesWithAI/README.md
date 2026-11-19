@@ -14,6 +14,8 @@ DotsAndBoxes/
 ├── player.py         # Player representation
 ├── game_logic.py     # Game rules and square detection
 ├── ui.py             # User interface
+├── ai_player.py      # AI player (LLM + heuristic fallback)
+├── llm_client.py     # OpenRouter chat-completions client
 ├── main.py           # Game entry point
 ├── test.py           # Unit tests for grid module
 └── test_game.py      # Integration tests for game logic
@@ -124,12 +126,12 @@ python -m unittest discover
 - ✅ Score tracking
 - ✅ Input validation
 - ✅ Winner determination
-- ✅ Optional AI opponent (Gemini or heuristic fallback)
+- ✅ Optional AI opponent (OpenRouter LLM or heuristic fallback)
 
 ## Requirements
 
 - Python 3.7 or higher
-- Optional: Gemini AI opponent requires `google-generativeai` and a `GEMINI_API_KEY`.
+- Optional: the LLM AI opponent requires the packages in `requirements.txt` and an OpenRouter API key in `.env`.
 
 ## Game Rules
 
@@ -158,24 +160,30 @@ GameLogic.current_player_index and players (with scores)
 You can add an AI player when configuring players by typing `AI` for the player type.
 
 ### How It Chooses Moves
-1. Attempts a Gemini model call (if `GEMINI_API_KEY` and dependency installed).
+1. Asks an LLM on [OpenRouter](https://openrouter.ai) for a move (if an API key is in `.env` and the dependencies are installed).
 2. If unavailable or invalid response, falls back to heuristic:
    - Complete a square if possible.
    - Avoid creating a third side of a box (setting up opponent).
    - Otherwise choose a random valid move.
 
-### Installing Gemini SDK
+The model is set by `MODEL` in `llm_client.py` (default: `baidu/ernie-5.5-flash-preview:free`). Any OpenRouter model ID will work.
+
+### Installing Dependencies
 ```bash
-pip install google-generativeai
+pip install -r requirements.txt
 ```
 
-### Setting the API Key (Windows PowerShell)
-```powershell
-$Env:GEMINI_API_KEY = "YOUR_KEY_HERE"
-```
-(For permanent use, add to your profile or a .env file and load it.)
+### Setting the API Key
+1. Get an API key from https://openrouter.ai/keys.
+2. Copy `.env.example` to `.env` in this folder.
+3. Put your key in `.env`:
+   ```
+   OPENROUTER_API_KEY=your_openrouter_key_here
+   ```
 
-### Dynamic Prompt Contents Sent to Gemini
+`.env` is listed in `.gitignore`, so your key will not be committed. Never commit a real key.
+
+### Dynamic Prompt Contents Sent to the Model
 - Board size
 - Current lines
 - Completed squares
@@ -187,4 +195,4 @@ $Env:GEMINI_API_KEY = "YOUR_KEY_HERE"
 Return exactly: `x1,y1 x2,y2` (e.g., `0,0 0,1`). Any other format triggers fallback.
 
 ### Offline / No Key
-If no key or SDK missing, the AI still operates via heuristic.
+If no key or dependencies are missing, the AI still operates via heuristic.

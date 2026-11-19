@@ -1,11 +1,18 @@
-import os
 import re
-from typing import Optional
+from pathlib import Path
 
 try:
-    import google.generativeai as genai  # type: ignore
-except ImportError:  # SDK not installed yet
-    genai = None  # type: ignore
+    from dotenv import dotenv_values
+    from openai import OpenAI
+except ImportError:  # Dependencies not installed yet
+    dotenv_values = None  # type: ignore
+    OpenAI = None  # type: ignore
+
+OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+MODEL = "baidu/ernie-5.5-flash-preview:free"
+
+# Read the settings in the .env file next to this module (works from any cwd)
+ENV_FILE = Path(__file__).with_name(".env")
 
 SYSTEM_PROMPT = (
     "You are an AI opponent for the Dots and Boxes game. "
@@ -53,21 +60,25 @@ def request_move(board_size: int,
                  player_scores,
                  current_player: str,
                  valid_moves):
-    """Call Gemini to get a move. Returns (start,end) or None if unavailable."""
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key or genai is None:
+    """Ask an OpenRouter model for a move. Returns (start,end) or None if unavailable."""
+    if OpenAI is None or dotenv_values is None:
+        return None  # Dependencies missing: caller uses heuristic
+    api_key = dotenv_values(ENV_FILE).get("OPENROUTER_API_KEY")
+    if not api_key:
         return None  # Signal to caller to use heuristic
 
     try:
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-pro")
+        client = OpenAI(base_url=OPENROUTER_BASE_URL, api_key=api_key)
         dynamic_prompt = _build_dynamic_prompt(board_size, lines_drawn, completed_squares,
                                                player_scores, current_player, valid_moves)
-        full_prompt = SYSTEM_PROMPT + "\n" + dynamic_prompt
-        response = model.generate_content(full_prompt)
-        if not hasattr(response, 'text'):
-            return None
-        text = response.text.strip()
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": dynamic_prompt},
+            ],
+        )
+        text = (response.choices[0].message.content or "").strip()
         match = MOVE_REGEX.search(text)
         if not match:
             return None
