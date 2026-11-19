@@ -3,6 +3,7 @@
 Example console implementations of the Dots and Boxes game in Python, used in Lane CC CS212: AI Programming 1.
 
 Course materials: https://github.com/LCC-CIT/CS212-CourseMaterials/
+
 More CS212 examples: https://github.com/LCC-CIT/CS212-Examples
 
 ## Projects
