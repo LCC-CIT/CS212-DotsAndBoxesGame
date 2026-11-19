@@ -20,15 +20,6 @@ class TestAI(unittest.TestCase):
         move = self.p1.choose_move(self.logic)
         self.assertIn(move, self.logic.get_valid_moves())
 
-    def test_ai_prefers_completing_square(self):
-        # Set up three sides of a square at top-left
-        self.grid.add_line((0,0),(1,0))
-        self.grid.add_line((0,0),(0,1))
-        self.grid.add_line((1,0),(1,1))
-        # Now AI should choose the completing edge (0,1)-(1,1)
-        move = self.p1.choose_move(self.logic)
-        self.assertEqual(move, ((0,1),(1,1)))
-
     def test_will_complete_square(self):
         self.grid.add_line((0,0),(1,0))
         self.grid.add_line((0,0),(0,1))

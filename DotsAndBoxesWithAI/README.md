@@ -14,7 +14,7 @@ DotsAndBoxes/
 ├── player.py         # Player representation
 ├── game_logic.py     # Game rules and square detection
 ├── ui.py             # User interface
-├── ai_player.py      # AI player (LLM + heuristic fallback)
+├── ai_player.py      # AI player (asks the LLM for moves)
 ├── llm_client.py     # OpenRouter chat-completions client
 ├── main.py           # Game entry point
 ├── test.py           # Unit tests for grid module
@@ -126,7 +126,7 @@ python -m unittest discover
 - ✅ Score tracking
 - ✅ Input validation
 - ✅ Winner determination
-- ✅ Optional AI opponent (OpenRouter LLM or heuristic fallback)
+- ✅ Optional AI opponent (OpenRouter LLM)
 
 ## Requirements
 
@@ -161,10 +161,7 @@ You can add an AI player when configuring players by typing `AI` for the player 
 
 ### How It Chooses Moves
 1. Asks an LLM on [OpenRouter](https://openrouter.ai) for a move (if an API key is in `.env` and the dependencies are installed).
-2. If unavailable or invalid response, falls back to heuristic:
-   - Complete a square if possible.
-   - Avoid creating a third side of a box (setting up opponent).
-   - Otherwise choose a random valid move.
+2. If the model is unavailable or its move is not legal, the AI picks a random legal move.
 
 The model is set by `MODEL` in `llm_client.py` (default: `baidu/ernie-5.5-flash-preview:free`). Any OpenRouter model ID will work.
 
@@ -192,7 +189,7 @@ pip install -r requirements.txt
 - Valid moves list (may truncate if large)
 
 ### Expected Model Output
-Return exactly: `x1,y1 x2,y2` (e.g., `0,0 0,1`). Any other format triggers fallback.
+Return exactly: `x1,y1 x2,y2` (e.g., `0,0 0,1`). Any other format makes the AI pick a random legal move.
 
 ### Offline / No Key
-If no key or dependencies are missing, the AI still operates via heuristic.
+If the key or dependencies are missing, the AI still plays, using random legal moves.

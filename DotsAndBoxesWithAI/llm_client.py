@@ -62,10 +62,10 @@ def request_move(board_size: int,
                  valid_moves):
     """Ask an OpenRouter model for a move. Returns (start,end) or None if unavailable."""
     if OpenAI is None or dotenv_values is None:
-        return None  # Dependencies missing: caller uses heuristic
+        return None  # Dependencies missing: caller picks a random move
     api_key = dotenv_values(ENV_FILE).get("OPENROUTER_API_KEY")
     if not api_key:
-        return None  # Signal to caller to use heuristic
+        return None  # No key: caller picks a random move
 
     try:
         client = OpenAI(base_url=OPENROUTER_BASE_URL, api_key=api_key)

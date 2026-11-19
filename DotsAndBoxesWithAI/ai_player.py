@@ -3,7 +3,7 @@ from player import Player
 from llm_client import request_move
 
 class AIPlayer(Player):
-    """AI Player that uses an OpenRouter LLM or heuristic fallback."""
+    """AI Player that asks an OpenRouter LLM for its moves."""
 
     def choose_move(self, game_logic):
         valid_moves = game_logic.get_valid_moves()
@@ -23,55 +23,5 @@ class AIPlayer(Player):
         )
         if move and move in valid_moves:
             return move
-        # Fallback heuristic
-        return self._heuristic_move(game_logic, valid_moves)
-
-    def _heuristic_move(self, game_logic, valid_moves):
-        # 1. Moves that complete a square
-        completing = []
-        for (a, b) in valid_moves:
-            if game_logic.will_complete_square(a, b) > 0:
-                completing.append((a, b))
-        if completing:
-            return random.choice(completing)
-        # 2. Avoid creating third side (i.e., moves that create a nearly complete square for opponent)
-        safe = []
-        for (a, b) in valid_moves:
-            if not self._creates_third_side(game_logic, a, b):
-                safe.append((a, b))
-        if safe:
-            return random.choice(safe)
-        # 3. Any move
+        # The model failed or gave an illegal move: pick any legal move instead
         return random.choice(valid_moves)
-
-    def _creates_third_side(self, game_logic, a, b):
-        # Check potential squares around the line; if adding it creates a square with exactly 3 sides (so opponent can finish), mark risky
-        x1, y1 = a
-        x2, y2 = b
-        size = game_logic.grid.size
-        potential = []
-        if x1 == x2:  # vertical
-            potential.append((min(x1, x2) - 1, min(y1, y2)))
-            potential.append((min(x1, x2), min(y1, y2)))
-        elif y1 == y2:  # horizontal
-            potential.append((min(x1, x2), min(y1, y2) - 1))
-            potential.append((min(x1, x2), min(y1, y2)))
-        lines = set(game_logic.grid.lines)
-        # consider candidate line
-        lines.add((a, b))
-        for sx, sy in potential:
-            if sx < 0 or sy < 0 or sx >= size - 1 or sy >= size - 1:
-                continue
-            edges = [
-                ((sx, sy), (sx + 1, sy)),
-                ((sx, sy + 1), (sx + 1, sy + 1)),
-                ((sx, sy), (sx, sy + 1)),
-                ((sx + 1, sy), (sx + 1, sy + 1)),
-            ]
-            present = 0
-            for e in edges:
-                if e in lines or (e[1], e[0]) in lines:
-                    present += 1
-            if present == 3 and ((a, b) in edges or (b, a) in edges):
-                return True
-        return False

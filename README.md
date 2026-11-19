@@ -15,5 +15,5 @@ More CS212 examples: https://github.com/LCC-CIT/CS212-Examples
 
 - [DotsAndBoxesWithAI](DotsAndBoxesWithAI/)
   - A different implementation with a configurable grid size, 2–4 players, unit and integration tests, and an optional AI opponent.
-  - The AI player asks an LLM on OpenRouter for a move (using the OpenAI Python SDK) when the packages in `requirements.txt` are installed and `OPENROUTER_API_KEY` is set in a `.env` file; otherwise it falls back to a simple heuristic (complete a box if possible, avoid giving away a third side, else pick a random move).
+  - The AI player asks an LLM on OpenRouter for a move (using the OpenAI Python SDK) when the packages in `requirements.txt` are installed and `OPENROUTER_API_KEY` is set in a `.env` file. If the model is unavailable or its move is illegal, the AI plays a random legal move instead.
   - Run it with `python main.py`. See its [README](DotsAndBoxesWithAI/README.md) for details.
